@@ -3,6 +3,11 @@ use crate::{parser::Statement, opcodes::{OPCODE_MAP, Opcode}};
 
 grammar;
 
+match {
+    r"\s*" => { }, // Ignore whitespace
+    r"//[^\n\r]*[\n\r]*" => { }, // Ignore // comments
+    _,
+} 
 
 // The top level collection of statements, 
 pub Statements: Vec<Statement> = {
@@ -53,7 +58,4 @@ GetOpcode: Opcode = {
 Identifier: String = r"[a-zA-Z][a-zA-Z0-9_]*" => String::from(<>);
 
 // Number definition
-Number: u64 = {
-    // TODO: check bit sizes in this case
-    r"[0-9]*" => u64::from_str(<>).unwrap() as u64,
-}
+Number: u64 = <s:r"[0-9]+"> => u64::from_str(s).unwrap();

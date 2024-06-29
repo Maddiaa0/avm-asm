@@ -152,6 +152,7 @@ mod tests {
     #[test]
     fn simple_test() {
         let input = "
+            // Comment
             add 1 2 3;
             sub! 1 2 3;
         "

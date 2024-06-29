@@ -118,8 +118,8 @@ fn resolve_labels(parsed: &mut [Statement]) {
                 // TODO: make sure the code with the label IS a JUMP
                 if let Some(ref label) = label {
                     let resolved_label = label_map.get(label).unwrap();
-                    // If it is a jump we should be able to assume that the operands are empty
-                    operands.push(*resolved_label);
+                    // If it is a jump then we push into the front
+                    operands.insert(0, *resolved_label);
                 }
             }
             _ => panic!("Only opcodes and labels should remain"),
@@ -232,6 +232,33 @@ mod tests {
         ];
         let expected_bytecode = generate_code(expected_instructions);
 
+        let bytecode = compile_asm(input);
+        assert_eq!(bytecode, expected_bytecode);
+    }
+
+    #[test]
+    fn macros_jumping_outside() {
+        let input = "
+            .macro test {
+                add 1 2 3;
+                jumpi @label 0;
+                sub! 1 2 3;
+            };
+
+            $test;
+        label:
+            add 1 2 3;
+        "
+        .to_owned();
+
+        let expected_instructions = vec![
+            Instruction::new(Opcode::ADD, false, vec![1, 2, 3]),
+            Instruction::new(Opcode::JUMPI, false, vec![3, 0]),
+            Instruction::new(Opcode::SUB, true, vec![1, 2, 3]),
+            Instruction::new(Opcode::ADD, false, vec![1, 2, 3]),
+        ];
+
+        let expected_bytecode = generate_code(expected_instructions);
         let bytecode = compile_asm(input);
         assert_eq!(bytecode, expected_bytecode);
     }

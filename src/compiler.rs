@@ -6,7 +6,7 @@ use std::collections::{HashMap, VecDeque};
 use crate::{
     codegen::generate_code,
     instruction::Instruction,
-    parser::{parse_asm, Statement},
+    parser::{parse_asm, Operand, Statement},
 };
 
 pub fn compile_file(path: &String) -> String {
@@ -15,7 +15,10 @@ pub fn compile_file(path: &String) -> String {
 }
 
 pub fn compile_asm(input: String) -> String {
-    let parsed = parse_asm(input);
+    let mut parsed = parse_asm(input);
+
+    // Resolve all constants
+    resolve_constants(&mut parsed);
 
     let mut parsed = resolve_macros(parsed);
 
@@ -25,6 +28,38 @@ pub fn compile_asm(input: String) -> String {
     // Before we pass to the code generator, all we should have is a vector of opcodes
     let instructions = temporary_to_instruction_vector(parsed);
     generate_code(instructions)
+}
+
+// Resolve constants
+//
+// This algorithm involves two passes:
+// 1. collect all constant definitions into a hash map
+// 2. Find all invocations of constants and replace them with the value
+fn resolve_constants(parsed: &mut [Statement]) {
+    let mut constants: HashMap<String, Operand> = HashMap::new();
+
+    for statement in parsed.iter() {
+        if let Statement::ConstantDefinition(name, value) = statement {
+            constants.insert(name.clone(), value.clone());
+        }
+    }
+
+    // Resolve all variable definitions in our operands and replace with that valid constants
+    // We do this inplace
+    for statement in parsed.iter_mut() {
+        match statement {
+            Statement::OpcodeStatement(_, _, operands, _) => {
+                for operand in operands.iter_mut() {
+                    if let Operand::Variable(name) = operand {
+                        if let Some(constant) = constants.get(name) {
+                            *operand = constant.clone();
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
 }
 
 // Resolve macros
@@ -102,7 +137,8 @@ fn resolve_labels(parsed: &mut [Statement]) {
             Statement::OpcodeStatement(_, _, _, _) => {
                 pc += 1;
             }
-            _ => panic!("Only opcodes and labels should remain"),
+            // We do not count any other definitions in our pc calculations
+            _ => {}
         }
     }
 
@@ -119,7 +155,7 @@ fn resolve_labels(parsed: &mut [Statement]) {
                     operands.insert(0, (*resolved_label).into());
                 }
             }
-            _ => panic!("Only opcodes and labels should remain"),
+            _ => {}
         }
     }
 }
@@ -307,6 +343,19 @@ mod tests {
 
         let bytecode = compile_asm(inputs);
         let expected_bytecode = "24000530644E72E131A029B85045B68181585D97816A916871CA8D3C208C16D87CFD460000000000000002";
+        assert_eq!(bytecode, expected_bytecode);
+    }
+
+    #[test]
+    fn test_constants() {
+        let inputs = "
+        .const c = 0x1234;
+        add $c $c $c;
+        "
+        .to_owned();
+
+        let bytecode = compile_asm(inputs);
+        let expected_bytecode = "0000000000000000123400000000000012340000000000001234";
         assert_eq!(bytecode, expected_bytecode);
     }
 }

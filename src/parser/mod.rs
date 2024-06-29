@@ -12,8 +12,9 @@ pub enum Statement {
         Opcode,
         /*indirect=*/ bool,
         Vec<Operand>,
-        Option<String>,
+        /*Label*/ Option<String>,
     ), // Opcode and it's operands
+    ConstantDefinition(String, Operand),
     Label(String),
 }
 
@@ -23,6 +24,7 @@ pub enum Operand {
     Hex(String),
     // TOOD: change name of above to fit that this is now just generic operands not literals
     Tag(TypeTag),
+    Variable(String),
 }
 
 impl Operand {
@@ -34,6 +36,7 @@ impl Operand {
                 value.to_be_bytes().to_vec()
             }
             Operand::Tag(tag) => (tag.clone() as u8).to_be_bytes().to_vec(),
+            _ => panic!("A variable should never appear in the final code!"),
         }
     }
 

@@ -23,6 +23,7 @@ Statement: Statement = {
     OpcodeStatement => <>,
     MacroStatement => <>,
     MacroInvocation => <>,
+    ConstantDefinition => <>,
 }
 
 // TODO: parameters for macros
@@ -38,6 +39,9 @@ Label: Statement = {
     <Identifier> ":" => Statement::Label(<>),
 }
 
+ConstantDefinition: Statement = {
+    ".const" <name:Identifier> "=" <value:Operand> => Statement::ConstantDefinition(name, value),
+}
 
 // Opcode usage
 OpcodeStatement: Statement = {
@@ -60,6 +64,7 @@ Operand: Operand = {
     HexLiteral => Operand::Hex(<>),
     DecimalLiteral => Operand::Decimal(<>), 
     TypeTagLiteral => Operand::Tag(<>),
+    Variable => Operand::Variable(<>),
 }
 
 TypeTagLiteral: TypeTag = {
@@ -70,6 +75,8 @@ TypeTagLiteral: TypeTag = {
     "u128" => TypeTag::U128,
     "ff" => TypeTag::FF,
 }
+
+Variable: String = "$"<Identifier> => <>;
 
 HexLiteral: String = r"0x[a-f0-9]+" => String::from(<>);
 

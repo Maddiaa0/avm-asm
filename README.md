@@ -81,6 +81,21 @@ This allows you to set a hex value into the memory location 2.
 set ff 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd46 2;
 ```
 
+### Constants
+You can define constants anywhere in a file that will be replaced with the assigned value. 
+
+Constants are defined as follows:
+```asm
+.const name = 0x1234;
+```
+
+Constants can be used within the bytecode in the same way a macro is invoked
+```
+.const name = 0x1234;
+
+add $name 2 3 // equivalent to add 0x1234 2 3
+```
+
 
 ## Warning
 This assembler has no guard rails implemented, it will let you write invalid bytecode.

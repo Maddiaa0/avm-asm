@@ -27,8 +27,8 @@ fn temporary_to_instruction_vector(parsed: Vec<Statement>) -> Vec<Instruction> {
     let mut instructions = Vec::new();
 
     for statement in parsed {
-        if let Statement::OpcodeStatement(opcode, operands) = statement {
-            let instr = Instruction::new(opcode, operands);
+        if let Statement::OpcodeStatement(opcode, indirect, operands) = statement {
+            let instr = Instruction::new(opcode, indirect, operands);
             instructions.push(instr);
         }
     }
@@ -40,11 +40,11 @@ fn temporary_to_instruction_vector(parsed: Vec<Statement>) -> Vec<Instruction> {
 fn simple_test_compile() {
     let input = "
         add 1 2 3;
-        sub 1 2 3;
+        sub! 1 2 3;
     "
     .to_owned();
 
     let bytecode = compile_asm(input);
 
-    assert_eq!(bytecode, "0000000000000000010000000000000002000000000000000301000000000000000100000000000000020000000000000003");
+    assert_eq!(bytecode, "00000000000000000001000000000000000200000000000000030101000000000000000100000000000000020000000000000003");
 }

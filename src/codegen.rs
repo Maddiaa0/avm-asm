@@ -6,10 +6,7 @@ pub fn generate_code(instructions: Vec<Instruction>) -> String {
 
     // TODO: make sure these are converted to hex bytes accurately
     for instr in instructions {
-        bytecode.push(instr.opcode as u8);
-        for operand in instr.operands {
-            bytecode.extend(operand.to_be_bytes());
-        }
+        instr.append_to_buffer(&mut bytecode);
     }
 
     bytes_to_hex_string(&bytecode)

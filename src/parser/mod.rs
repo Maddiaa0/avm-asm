@@ -2,8 +2,10 @@ use lalrpop_util::*;
 
 use crate::opcodes::Opcode;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Statement {
+    MacroStatement(String, Vec<Statement>),
+    MacroInvocation(String),
     OpcodeStatement(Opcode, /*indirect=*/ bool, Vec<u64>, Option<String>), // Opcode and it's operands
     Label(String),
 }

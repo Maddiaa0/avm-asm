@@ -16,12 +16,24 @@ LabelOrStatement: Option<Statement> = {
 
 Statement: Statement = {
     OpcodeStatement => <>,
+    MacroStatement => <>,
+    MacroInvocation => <>,
+}
+
+// TODO: parameters for macros
+MacroStatement: Statement = {
+    ".macro" <name:Identifier> "{" <statements:Statements> "}" => Statement::MacroStatement(name, statements),
+}
+
+MacroInvocation: Statement = {
+    "$" <name:Identifier> => Statement::MacroInvocation(name),
 }
 
 Label: Statement = {
     <Identifier> ":" => Statement::Label(<>),
     <Number> ":" => Statement::Label(<>.to_string())
 }
+
 
 // Opcode usage
 OpcodeStatement: Statement = {

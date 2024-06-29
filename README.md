@@ -90,7 +90,7 @@ Constants are defined as follows:
 ```
 
 Constants can be used within the bytecode in the same way a macro is invoked
-```
+```asm
 .const name = 0x1234;
 
 add $name 2 3 // equivalent to add 0x1234 2 3

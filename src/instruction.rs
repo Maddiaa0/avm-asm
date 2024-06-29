@@ -1,4 +1,4 @@
-use crate::{opcodes::Opcode, parser::Operand, parser::TypeTag};
+use crate::{opcodes::Opcode, parser::Operand};
 
 // An instruction is a pairing of an opcode and its operands.
 #[derive(Debug)]
@@ -26,7 +26,7 @@ impl Instruction {
         match self.opcode {
             // Opcodes that contain tags will push their first opcode (the tag)
             // as a u8
-            Opcode::CAST | Opcode::SET => {
+            Opcode::SET | Opcode::CAST => {
                 // yuck
                 let mut ops = self.operands.clone();
 
@@ -39,6 +39,12 @@ impl Instruction {
 
                 // First operand MUST be a numeric, i.e. the tag
                 buffer.push(tag);
+
+                // If there is a second operand, we provide the hint
+                // !this case is really only relevant for SET
+                // !to be bytes with hint will ignore it if no literal is provided
+                let second_operand = ops.remove(0);
+                buffer.extend(second_operand.to_be_bytes_with_hint(tag.into()));
 
                 // TODO: support set for large types
                 for operand in &ops {

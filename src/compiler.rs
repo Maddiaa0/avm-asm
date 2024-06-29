@@ -288,4 +288,28 @@ mod tests {
         let expected_bytecode = "0E000100000000000000020000000000000003";
         assert_eq!(bytecode, expected_bytecode);
     }
+
+    #[test]
+    fn set_with_hex_literals() {
+        let inputs = "
+        set u16 0x1234 2;
+        "
+        .to_owned();
+
+        let bytecode = compile_asm(inputs);
+        let expected_bytecode = "24000112340000000000000002";
+        assert_eq!(bytecode, expected_bytecode);
+    }
+
+    #[test]
+    fn set_with_ff_literal() {
+        let inputs = "
+        set ff 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd46 2;
+        "
+        .to_owned();
+
+        let bytecode = compile_asm(inputs);
+        let expected_bytecode = "24000530644E72E131A029B85045B68181585D97816A916871CA8D3C208C16D87CFD460000000000000002";
+        assert_eq!(bytecode, expected_bytecode);
+    }
 }

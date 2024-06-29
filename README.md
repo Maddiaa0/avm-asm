@@ -54,6 +54,33 @@ When invoking a macro, you must prefix it with `$`. For example:
 $second_macro;
 ```
 
+### Tagged Opcodes
+When working with opcodes that reason about the underlying types (a consequence of a tagged memory design) we can define types in a variety of ways.
+
+*As the underlying type in the bytecode*
+```asm
+cast 1 2 3;
+```
+
+*As the type that it represents*
+```asm
+cast u16 2 3;
+```
+
+The two statements above are equivalent.
+
+### Hex literals
+The Set opcode requires that you write a constant value to be written into a memory address, some of these types are larger than are supported as a numeric literal
+by the compiler, the solution is to use an explicit hex literal when dealing with large values.
+
+This allows you to set a hex value into the memory location 2. 
+
+(Error handling is wack so the compiler will panic if your literal overflows your specified type tag)
+
+```asm
+set ff 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd46 2;
+```
+
 
 ## Warning
 This assembler has no guard rails implemented, it will let you write invalid bytecode.

@@ -1,6 +1,6 @@
 use lalrpop_util::*;
 
-use crate::opcodes::Opcode;
+use crate::{opcodes::Opcode, utils::hex_to_bytes};
 
 #[derive(Debug, Clone)]
 pub enum Statement {
@@ -92,6 +92,24 @@ impl Operand {
             Operand::Tag(tag) => (tag.clone() as u8).to_be_bytes().to_vec(),
         }
     }
+
+    pub fn to_be_bytes_with_hint(&self, tag_hint: TypeTag) -> Vec<u8> {
+        match self {
+            Operand::Hex(hex_str) => {
+                let number_of_bits = match tag_hint {
+                    TypeTag::U8 => 8,
+                    TypeTag::U16 => 16,
+                    TypeTag::U32 => 32,
+                    TypeTag::U64 => 64,
+                    TypeTag::U128 => 128,
+                    TypeTag::FF => 256,
+                };
+
+                hex_to_bytes(&hex_str, number_of_bits)
+            }
+            _ => self.to_be_bytes(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -102,6 +120,20 @@ pub enum TypeTag {
     U64,
     U128,
     FF,
+}
+
+impl From<u8> for TypeTag {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => TypeTag::U8,
+            1 => TypeTag::U16,
+            2 => TypeTag::U32,
+            3 => TypeTag::U64,
+            4 => TypeTag::U128,
+            5 => TypeTag::FF,
+            _ => panic!("Invalid type tag"),
+        }
+    }
 }
 
 pub(crate) fn parse_asm(input: String) -> Vec<Statement> {

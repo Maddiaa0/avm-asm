@@ -1,5 +1,7 @@
 use lalrpop_util::*;
 
+pub mod types;
+
 use crate::{opcodes::Opcode, utils::hex_to_bytes};
 
 #[derive(Debug, Clone)]
@@ -21,64 +23,6 @@ pub enum Operand {
     Hex(String),
     // TOOD: change name of above to fit that this is now just generic operands not literals
     Tag(TypeTag),
-}
-
-impl From<u8> for Operand {
-    fn from(value: u8) -> Self {
-        Operand::Decimal(value as u64)
-    }
-}
-
-impl From<u16> for Operand {
-    fn from(value: u16) -> Self {
-        Operand::Decimal(value as u64)
-    }
-}
-
-impl From<u32> for Operand {
-    fn from(value: u32) -> Self {
-        Operand::Decimal(value as u64)
-    }
-}
-
-impl From<u64> for Operand {
-    fn from(value: u64) -> Self {
-        Operand::Decimal(value)
-    }
-}
-
-impl From<i8> for Operand {
-    fn from(value: i8) -> Self {
-        Operand::Decimal(value as u64)
-    }
-}
-
-impl From<i16> for Operand {
-    fn from(value: i16) -> Self {
-        Operand::Decimal(value as u64)
-    }
-}
-
-impl From<i32> for Operand {
-    fn from(value: i32) -> Self {
-        Operand::Decimal(value as u64)
-    }
-}
-
-impl From<i64> for Operand {
-    fn from(value: i64) -> Self {
-        Operand::Decimal(value as u64)
-    }
-}
-
-impl From<String> for Operand {
-    fn from(value: String) -> Self {
-        if value.starts_with("0x") {
-            Operand::Hex(value)
-        } else {
-            Operand::Decimal(value.parse().unwrap())
-        }
-    }
 }
 
 impl Operand {
@@ -105,7 +49,7 @@ impl Operand {
                     TypeTag::FF => 256,
                 };
 
-                hex_to_bytes(&hex_str, number_of_bits)
+                hex_to_bytes(hex_str, number_of_bits)
             }
             _ => self.to_be_bytes(),
         }
@@ -120,20 +64,6 @@ pub enum TypeTag {
     U64,
     U128,
     FF,
-}
-
-impl From<u8> for TypeTag {
-    fn from(value: u8) -> Self {
-        match value {
-            0 => TypeTag::U8,
-            1 => TypeTag::U16,
-            2 => TypeTag::U32,
-            3 => TypeTag::U64,
-            4 => TypeTag::U128,
-            5 => TypeTag::FF,
-            _ => panic!("Invalid type tag"),
-        }
-    }
 }
 
 pub(crate) fn parse_asm(input: String) -> Vec<Statement> {

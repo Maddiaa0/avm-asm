@@ -11,7 +11,7 @@ match {
 
 // The top level collection of statements, 
 pub Statements: Vec<Statement> = {
-    <ls:LabelOrStatement*> <s:Statement?> => ls.into_iter().flatten().chain(s.into_iter()).collect(), 
+    <ls:LabelOrStatement*> <s:Statement?> => ls.into_iter().flatten().chain(s).collect(), 
 }
 
 LabelOrStatement: Option<Statement> = {
@@ -42,15 +42,15 @@ Label: Statement = {
 // Opcode usage
 OpcodeStatement: Statement = {
     // TODO: i feel that this could be trying to be too dynamic, do NOT remove this todo until solved
-    <opcode:GetOpcode> <operands:Operand*> => Statement::OpcodeStatement(opcode.clone(), /*indirect=*/false, operands, None),
-    <opcode:GetOpcode> "@"<label:Identifier> <operands:Operand*> => Statement::OpcodeStatement(opcode.clone(), /*indirect=*/false, operands, Some(label)),
-    <opcode:GetOpcode> "!" <operands:Operand*> => Statement::OpcodeStatement(opcode.clone(), /*indirect=*/true, operands, None),
+    <opcode:GetOpcode> <operands:Operand*> => Statement::OpcodeStatement(opcode, /*indirect=*/false, operands, None),
+    <opcode:GetOpcode> "@"<label:Identifier> <operands:Operand*> => Statement::OpcodeStatement(opcode, /*indirect=*/false, operands, Some(label)),
+    <opcode:GetOpcode> "!" <operands:Operand*> => Statement::OpcodeStatement(opcode, /*indirect=*/true, operands, None),
 }
 
 GetOpcode: Opcode = {
     <opcode:Identifier> => {
         let opcode = OPCODE_MAP.get(&opcode.to_lowercase()).expect("unknown opcode");
-        opcode.clone()
+        *opcode
     }
 }
 

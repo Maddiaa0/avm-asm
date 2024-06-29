@@ -175,10 +175,7 @@ impl Opcode {
     }
 
     pub fn has_tag(&self) -> bool {
-        match self {
-            Opcode::CAST | Opcode::SET => true,
-            _ => false,
-        }
+        matches!(self, Opcode::SET | Opcode::CAST)
     }
 }
 

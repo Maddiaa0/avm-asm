@@ -37,15 +37,12 @@ fn resolve_macros(parsed: Vec<Statement>) -> Vec<Statement> {
     expand_macros(parsed, &macro_definitions)
 }
 
-fn collect_macro_definitions(parsed: &Vec<Statement>) -> HashMap<String, Vec<Statement>> {
+fn collect_macro_definitions(parsed: &[Statement]) -> HashMap<String, Vec<Statement>> {
     let mut macro_definitions: HashMap<String, Vec<Statement>> = HashMap::new();
 
     for statement in parsed.iter() {
-        match statement {
-            Statement::MacroStatement(name, statements) => {
-                macro_definitions.insert(name.clone(), statements.clone());
-            }
-            _ => {}
+        if let Statement::MacroStatement(name, statements) = statement {
+            macro_definitions.insert(name.clone(), statements.clone());
         }
     }
 

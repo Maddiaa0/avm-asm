@@ -1,6 +1,6 @@
-pub mod compiler;
-mod parser;
-mod opcodes;
-mod instruction;
 mod codegen;
+pub mod compiler;
+mod instruction;
+mod opcodes;
+mod parser;
 mod utils;

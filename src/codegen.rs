@@ -1,6 +1,5 @@
 use crate::{instruction::Instruction, utils::bytes_to_hex_string};
 
-
 // Generate code from a string of instructions
 pub fn generate_code(instructions: Vec<Instruction>) -> String {
     let mut bytecode = Vec::new();

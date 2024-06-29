@@ -1,15 +1,14 @@
-use clap::{App, Parser};
-
-use avm_asm::compiler::compile_asm;
+use avm_asm::compiler::compile_file;
+use clap::Parser;
 
 #[derive(Parser, Debug, Clone)]
-#[clap(name = "avm-asm", version = "0.1.0", author = "Maddiaa0")]
+#[clap(name = "avm-asm", version = "0.1.0", author = "Maddiaa")]
 struct AvmAsm {
     pub path: Option<String>,
 }
 
 fn main() {
-    let mut cli = AvmAsm::parse();
+    let cli = AvmAsm::parse();
 
     // Check if no argument is provided
     if cli.path.is_none() {
@@ -19,9 +18,8 @@ fn main() {
 
     // Read the file
     let path = cli.path.unwrap();
-    let input = std::fs::read_to_string(path).unwrap();
 
-    let bytecode = compile_asm(input);
+    let bytecode = compile_file(&path);
 
     println!("{bytecode}");
 }

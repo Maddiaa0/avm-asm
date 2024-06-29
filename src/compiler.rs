@@ -1,7 +1,16 @@
 // Compiler
 // Read in the AST from the parser
 
-use crate::{codegen::generate_code, instruction::Instruction, parser::{parse_asm, Statement}};
+use crate::{
+    codegen::generate_code,
+    instruction::Instruction,
+    parser::{parse_asm, Statement},
+};
+
+pub fn compile_file(path: &String) -> String {
+    let file = std::fs::read_to_string(path).unwrap();
+    compile_asm(file)
+}
 
 pub fn compile_asm(input: String) -> String {
     let parsed = parse_asm(input);
@@ -11,7 +20,6 @@ pub fn compile_asm(input: String) -> String {
     generate_code(instructions)
 }
 
-
 // This will be replaced with methods that resolve
 // 1. labels
 // 2. macros
@@ -19,13 +27,9 @@ fn temporary_to_instruction_vector(parsed: Vec<Statement>) -> Vec<Instruction> {
     let mut instructions = Vec::new();
 
     for statement in parsed {
-        match statement {
-            Statement::OpcodeStatement(opcode, operands) => {
-                let instr = Instruction::new(opcode, operands);
-                instructions.push(instr);
-            }
-            // Right now as we are super simple, we do not need to handle any other labels
-            _ => {}
+        if let Statement::OpcodeStatement(opcode, operands) = statement {
+            let instr = Instruction::new(opcode, operands);
+            instructions.push(instr);
         }
     }
 
@@ -37,7 +41,8 @@ fn simple_test_compile() {
     let input = "
         add 1 2 3;
         sub 1 2 3;
-    ".to_owned();
+    "
+    .to_owned();
 
     let bytecode = compile_asm(input);
 

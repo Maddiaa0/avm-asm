@@ -1,4 +1,4 @@
-use phf::{phf_map, Map};
+use phf::phf_map;
 
 /// All  opcodes
 /// Keep updated with TS, cpp, and docs protocol specs!
@@ -138,14 +138,14 @@ impl Opcode {
             Opcode::CMOV => "CMOV",
 
             // World State
-            Opcode::SLOAD => "SLOAD",   // Public Storage
-            Opcode::SSTORE => "SSTORE", // Public Storage
-            Opcode::NOTEHASHEXISTS => "NOTEHASHEXISTS", // Notes & Nullifiers
-            Opcode::EMITNOTEHASH => "EMITNOTEHASH", // Notes & Nullifiers
+            Opcode::SLOAD => "SLOAD",                     // Public Storage
+            Opcode::SSTORE => "SSTORE",                   // Public Storage
+            Opcode::NOTEHASHEXISTS => "NOTEHASHEXISTS",   // Notes & Nullifiers
+            Opcode::EMITNOTEHASH => "EMITNOTEHASH",       // Notes & Nullifiers
             Opcode::NULLIFIEREXISTS => "NULLIFIEREXISTS", // Notes & Nullifiers
-            Opcode::EMITNULLIFIER => "EMITNULLIFIER", // Notes & Nullifiers
+            Opcode::EMITNULLIFIER => "EMITNULLIFIER",     // Notes & Nullifiers
             Opcode::L1TOL2MSGEXISTS => "L1TOL2MSGEXISTS", // Messages
-            Opcode::HEADERMEMBER => "HEADERMEMBER", // Archive tree & Headers
+            Opcode::HEADERMEMBER => "HEADERMEMBER",       // Archive tree & Headers
 
             // Accrued Substate
             Opcode::EMITUNENCRYPTEDLOG => "EMITUNENCRYPTEDLOG",
@@ -173,7 +173,6 @@ impl Opcode {
             Opcode::TORADIXLE => "TORADIXLE",
         }
     }
-
 }
 
 pub static OPCODE_MAP: phf::Map<&'static str, Opcode> = phf_map! {

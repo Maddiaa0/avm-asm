@@ -1,0 +1,41 @@
+use std::str::FromStr;
+use crate::{parser::Statement, opcodes::OPCODE_MAP};
+
+grammar;
+
+
+// The top level collection of statements, 
+pub Statements: Vec<Statement> = {
+    <ls:LabelOrStatement*> <s:Statement?> => ls.into_iter().flatten().chain(s.into_iter()).collect(), 
+}
+
+LabelOrStatement: Option<Statement> = {
+    Label => Some(<>),
+    <Statement?> ";" => <>
+}
+
+Statement: Statement = {
+    OpcodeStatement => <>,
+}
+
+Label: Statement = {
+    <Identifier> ":" => Statement::Label(<>),
+    <Number> ":" => Statement::Label(<>.to_string())
+}
+
+// Opcode usage
+OpcodeStatement: Statement = {
+    <opcode:Identifier> <operands:Number*> => {
+        // Note: this is terrible for error recovery lmao!
+        let opcode = OPCODE_MAP.get(&opcode.to_lowercase()).expect("unknown opcode");
+        Statement::OpcodeStatement(opcode.clone(), operands)
+    } 
+}
+
+Identifier: String = r"[a-zA-Z][a-zA-Z0-9_]*" => String::from(<>);
+
+// Number definition
+Number: u64 = {
+    // TODO: check bit sizes in this case
+    r"[0-9]*" => u64::from_str(<>).unwrap() as u64,
+}

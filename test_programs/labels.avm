@@ -1,3 +1,5 @@
     add 1 2 3;
+    jump @label;
+    sub 1 2 3;
 label:
     add 1 2 3;

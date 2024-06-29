@@ -4,7 +4,7 @@ use crate::opcodes::Opcode;
 
 #[derive(Debug)]
 pub enum Statement {
-    OpcodeStatement(Opcode, /*indirect=*/ bool, Vec<u64>), // Opcode and it's operands
+    OpcodeStatement(Opcode, /*indirect=*/ bool, Vec<u64>, Option<String>), // Opcode and it's operands
     Label(String),
 }
 

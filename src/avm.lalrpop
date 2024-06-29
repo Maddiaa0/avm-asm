@@ -25,8 +25,10 @@ Label: Statement = {
 
 // Opcode usage
 OpcodeStatement: Statement = {
-    <opcode:GetOpcode> <operands:Number*> => Statement::OpcodeStatement(opcode.clone(), /*indirect=*/false, operands),
-    <opcode:GetOpcode> "!" <operands:Number*> => Statement::OpcodeStatement(opcode.clone(), /*indirect=*/true, operands),
+    // TODO: i feel that this could be trying to be too dynamic, do NOT remove this todo until solved
+    <opcode:GetOpcode> <operands:Number*> => Statement::OpcodeStatement(opcode.clone(), /*indirect=*/false, operands, None),
+    <opcode:GetOpcode> "@"<label:Identifier> => Statement::OpcodeStatement(opcode.clone(), /*indirect=*/false, vec![], Some(label)),
+    <opcode:GetOpcode> "!" <operands:Number*> => Statement::OpcodeStatement(opcode.clone(), /*indirect=*/true, operands, None),
 }
 
 GetOpcode: Opcode = {

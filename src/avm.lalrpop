@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use crate::{parser::Statement, opcodes::{OPCODE_MAP, Opcode}};
+use crate::{parser::{Statement, Operand, TypeTag}, opcodes::{OPCODE_MAP, Opcode}};
 
 grammar;
 
@@ -36,16 +36,15 @@ MacroInvocation: Statement = {
 
 Label: Statement = {
     <Identifier> ":" => Statement::Label(<>),
-    <Number> ":" => Statement::Label(<>.to_string())
 }
 
 
 // Opcode usage
 OpcodeStatement: Statement = {
     // TODO: i feel that this could be trying to be too dynamic, do NOT remove this todo until solved
-    <opcode:GetOpcode> <operands:Number*> => Statement::OpcodeStatement(opcode.clone(), /*indirect=*/false, operands, None),
-    <opcode:GetOpcode> "@"<label:Identifier> <operands:Number*> => Statement::OpcodeStatement(opcode.clone(), /*indirect=*/false, operands, Some(label)),
-    <opcode:GetOpcode> "!" <operands:Number*> => Statement::OpcodeStatement(opcode.clone(), /*indirect=*/true, operands, None),
+    <opcode:GetOpcode> <operands:Operand*> => Statement::OpcodeStatement(opcode.clone(), /*indirect=*/false, operands, None),
+    <opcode:GetOpcode> "@"<label:Identifier> <operands:Operand*> => Statement::OpcodeStatement(opcode.clone(), /*indirect=*/false, operands, Some(label)),
+    <opcode:GetOpcode> "!" <operands:Operand*> => Statement::OpcodeStatement(opcode.clone(), /*indirect=*/true, operands, None),
 }
 
 GetOpcode: Opcode = {
@@ -57,5 +56,22 @@ GetOpcode: Opcode = {
 
 Identifier: String = r"[a-zA-Z][a-zA-Z0-9_]*" => String::from(<>);
 
+Operand: Operand = {
+    HexLiteral => Operand::Hex(<>),
+    DecimalLiteral => Operand::Decimal(<>), 
+    TypeTagLiteral => Operand::Tag(<>),
+}
+
+TypeTagLiteral: TypeTag = {
+    "u8" => TypeTag::U8,
+    "u16" => TypeTag::U16,
+    "u32" => TypeTag::U32,
+    "u64" => TypeTag::U64,
+    "u128" => TypeTag::U128,
+    "ff" => TypeTag::FF,
+}
+
+HexLiteral: String = r"0x[a-f0-9]+" => String::from(<>);
+
 // Number definition
-Number: u64 = <s:r"[0-9]+"> => u64::from_str(s).unwrap();
+DecimalLiteral: u64 = <s:r"[0-9]+"> => u64::from_str(s).unwrap();

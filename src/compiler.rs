@@ -119,7 +119,7 @@ fn resolve_labels(parsed: &mut [Statement]) {
                 if let Some(ref label) = label {
                     let resolved_label = label_map.get(label).unwrap();
                     // If it is a jump then we push into the front
-                    operands.insert(0, *resolved_label);
+                    operands.insert(0, (*resolved_label).into());
                 }
             }
             _ => panic!("Only opcodes and labels should remain"),
@@ -141,6 +141,7 @@ fn temporary_to_instruction_vector(parsed: Vec<Statement>) -> Vec<Instruction> {
         }
     }
 
+    println!("{:?}", instructions);
     instructions
 }
 
@@ -176,10 +177,10 @@ mod tests {
         .to_owned();
 
         let expected_instructions = vec![
-            Instruction::new(Opcode::ADD, false, vec![1, 2, 3]),
-            Instruction::new(Opcode::JUMP, false, vec![3]),
-            Instruction::new(Opcode::SUB, false, vec![1, 2, 3]),
-            Instruction::new(Opcode::ADD, false, vec![1, 2, 3]),
+            Instruction::new(Opcode::ADD, false, vec![1.into(), 2.into(), 3.into()]),
+            Instruction::new(Opcode::JUMP, false, vec![3.into()]),
+            Instruction::new(Opcode::SUB, false, vec![1.into(), 2.into(), 3.into()]),
+            Instruction::new(Opcode::ADD, false, vec![1.into(), 2.into(), 3.into()]),
         ];
         let expected_bytecode = generate_code(expected_instructions);
 
@@ -200,8 +201,8 @@ mod tests {
         .to_owned();
 
         let expected_instructions = vec![
-            Instruction::new(Opcode::ADD, false, vec![1, 2, 3]),
-            Instruction::new(Opcode::SUB, false, vec![1, 2, 3]),
+            Instruction::new(Opcode::ADD, false, vec![1.into(), 2.into(), 3.into()]),
+            Instruction::new(Opcode::SUB, false, vec![1.into(), 2.into(), 3.into()]),
         ];
         let expected_bytecode = generate_code(expected_instructions);
 
@@ -227,9 +228,9 @@ mod tests {
         .to_owned();
 
         let expected_instructions = vec![
-            Instruction::new(Opcode::ADD, false, vec![1, 2, 3]),
-            Instruction::new(Opcode::SUB, false, vec![1, 2, 3]),
-            Instruction::new(Opcode::ADD, false, vec![1, 2, 3]),
+            Instruction::new(Opcode::ADD, false, vec![1.into(), 2.into(), 3.into()]),
+            Instruction::new(Opcode::SUB, false, vec![1.into(), 2.into(), 3.into()]),
+            Instruction::new(Opcode::ADD, false, vec![1.into(), 2.into(), 3.into()]),
         ];
         let expected_bytecode = generate_code(expected_instructions);
 
@@ -253,14 +254,38 @@ mod tests {
         .to_owned();
 
         let expected_instructions = vec![
-            Instruction::new(Opcode::ADD, false, vec![1, 2, 3]),
-            Instruction::new(Opcode::JUMPI, false, vec![3, 0]),
-            Instruction::new(Opcode::SUB, true, vec![1, 2, 3]),
-            Instruction::new(Opcode::ADD, false, vec![1, 2, 3]),
+            Instruction::new(Opcode::ADD, false, vec![1.into(), 2.into(), 3.into()]),
+            Instruction::new(Opcode::JUMPI, false, vec![3.into(), 0.into()]),
+            Instruction::new(Opcode::SUB, true, vec![1.into(), 2.into(), 3.into()]),
+            Instruction::new(Opcode::ADD, false, vec![1.into(), 2.into(), 3.into()]),
         ];
 
         let expected_bytecode = generate_code(expected_instructions);
         let bytecode = compile_asm(input);
+        assert_eq!(bytecode, expected_bytecode);
+    }
+
+    #[test]
+    fn tagged_opcodes() {
+        let inputs = "
+        cast 1 2 3;
+        "
+        .to_owned();
+
+        let bytecode = compile_asm(inputs);
+        let expected_bytecode = "0E000100000000000000020000000000000003";
+        assert_eq!(bytecode, expected_bytecode);
+    }
+
+    #[test]
+    fn tagged_opcodes_as_utypes() {
+        let inputs = "
+        cast u16 2 3;
+        "
+        .to_owned();
+
+        let bytecode = compile_asm(inputs);
+        let expected_bytecode = "0E000100000000000000020000000000000003";
         assert_eq!(bytecode, expected_bytecode);
     }
 }

@@ -6,8 +6,102 @@ use crate::opcodes::Opcode;
 pub enum Statement {
     MacroStatement(String, Vec<Statement>),
     MacroInvocation(String),
-    OpcodeStatement(Opcode, /*indirect=*/ bool, Vec<u64>, Option<String>), // Opcode and it's operands
+    OpcodeStatement(
+        Opcode,
+        /*indirect=*/ bool,
+        Vec<Operand>,
+        Option<String>,
+    ), // Opcode and it's operands
     Label(String),
+}
+
+#[derive(Debug, Clone)]
+pub enum Operand {
+    Decimal(u64),
+    Hex(String),
+    // TOOD: change name of above to fit that this is now just generic operands not literals
+    Tag(TypeTag),
+}
+
+impl From<u8> for Operand {
+    fn from(value: u8) -> Self {
+        Operand::Decimal(value as u64)
+    }
+}
+
+impl From<u16> for Operand {
+    fn from(value: u16) -> Self {
+        Operand::Decimal(value as u64)
+    }
+}
+
+impl From<u32> for Operand {
+    fn from(value: u32) -> Self {
+        Operand::Decimal(value as u64)
+    }
+}
+
+impl From<u64> for Operand {
+    fn from(value: u64) -> Self {
+        Operand::Decimal(value)
+    }
+}
+
+impl From<i8> for Operand {
+    fn from(value: i8) -> Self {
+        Operand::Decimal(value as u64)
+    }
+}
+
+impl From<i16> for Operand {
+    fn from(value: i16) -> Self {
+        Operand::Decimal(value as u64)
+    }
+}
+
+impl From<i32> for Operand {
+    fn from(value: i32) -> Self {
+        Operand::Decimal(value as u64)
+    }
+}
+
+impl From<i64> for Operand {
+    fn from(value: i64) -> Self {
+        Operand::Decimal(value as u64)
+    }
+}
+
+impl From<String> for Operand {
+    fn from(value: String) -> Self {
+        if value.starts_with("0x") {
+            Operand::Hex(value)
+        } else {
+            Operand::Decimal(value.parse().unwrap())
+        }
+    }
+}
+
+impl Operand {
+    pub fn to_be_bytes(&self) -> Vec<u8> {
+        match self {
+            Operand::Decimal(value) => value.to_be_bytes().to_vec(),
+            Operand::Hex(value) => {
+                let value = u64::from_str_radix(&value[2..], 16).unwrap();
+                value.to_be_bytes().to_vec()
+            }
+            Operand::Tag(tag) => (tag.clone() as u8).to_be_bytes().to_vec(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum TypeTag {
+    U8,
+    U16,
+    U32,
+    U64,
+    U128,
+    FF,
 }
 
 pub(crate) fn parse_asm(input: String) -> Vec<Statement> {

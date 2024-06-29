@@ -173,6 +173,13 @@ impl Opcode {
             Opcode::TORADIXLE => "TORADIXLE",
         }
     }
+
+    pub fn has_tag(&self) -> bool {
+        match self {
+            Opcode::CAST | Opcode::SET => true,
+            _ => false,
+        }
+    }
 }
 
 pub static OPCODE_MAP: phf::Map<&'static str, Opcode> = phf_map! {

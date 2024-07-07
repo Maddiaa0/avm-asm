@@ -1,0 +1,33 @@
+
+.const balance_slot = 0x1;
+.const approval_slot = 0x2;
+.const admin_slot = 0x0;
+
+.macro get_caller_balance_slot {
+    mov 0 10;
+    set ff $balance_slot 11;
+    poseidon 10 2 10;
+    mov 10 0;
+};
+
+admin: 
+    sload $admin_slot 1;
+    return 1 1;
+
+update_admin:
+    caller 0;
+    sstore $admin_slot caller;
+    set u8 1 1;
+    return 1 1; 
+
+// mint(to, amount)
+mint:
+    calldataload 0 2 0;
+    
+    // Write balance slot into mem 0
+    $get_caller_balance_slot;
+    sload 0 42;
+    add 42 1 43;
+    store 0 43;
+    return 20 0;
+    

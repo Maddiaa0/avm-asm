@@ -1,0 +1,5 @@
+.include "./test_programs/includes_child.avm";
+
+.macro another {
+    add 0 1 2;
+}

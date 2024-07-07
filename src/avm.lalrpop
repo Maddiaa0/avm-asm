@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use crate::{parser::{Statement, Operand, TypeTag}, opcodes::{OPCODE_MAP, Opcode}};
+use crate::{utils::unescape_string, parser::{Statement, Operand, TypeTag}, opcodes::{OPCODE_MAP, Opcode}};
 
 grammar;
 
@@ -20,11 +20,17 @@ LabelOrStatement: Option<Statement> = {
 }
 
 Statement: Statement = {
+    IncludeStatement => <>,
     OpcodeStatement => <>,
     MacroStatement => <>,
     MacroInvocation => <>,
     ConstantDefinition => <>,
 }
+
+IncludeStatement: Statement = {
+    ".include" <StringLiteral> => Statement::IncludeStatement(<>),
+}
+
 
 // TODO: parameters for macros
 MacroStatement: Statement = {
@@ -58,7 +64,11 @@ GetOpcode: Opcode = {
     }
 }
 
-Identifier: String = r"[a-zA-Z][a-zA-Z0-9_]*" => String::from(<>);
+Identifier: String = r"[a-z][a-zA-Z0-9_]*" => String::from(<>);
+
+StringLiteral: String = {
+    r#""[^\\"\n\r]*(\\[tnfbrx'"\\0-9][^\\"\n\r]*)*""# => unescape_string(<>)
+}
 
 Operand: Operand = {
     HexLiteral => Operand::Hex(<>),

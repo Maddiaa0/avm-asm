@@ -1,0 +1,3 @@
+.macro inside_child {
+    add 0 1 2;
+};

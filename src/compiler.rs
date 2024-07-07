@@ -4,23 +4,46 @@
 use std::collections::{HashMap, VecDeque};
 
 use crate::{
-    codegen::generate_code,
-    instruction::Instruction,
-    parser::{parse_asm, Operand, Statement},
+    codegen::generate_code, fm::FileManager, instruction::Instruction, opcodes::Opcode, parser::{parse_asm, Operand, Statement}
 };
 
 pub fn compile_file(path: &String) -> String {
     let file = std::fs::read_to_string(path).unwrap();
-    compile_asm(file)
+    
+    // TODO: make the file manager keep track of the parent when dealing with include statements
+    // Maybe keep them in a tuple? Or deal with them when extending
+    let mut fm = FileManager::new();
+
+    let mut parsed = parse_asm(file);
+    fm.extend_file_stack(&parsed);
+
+    while !fm.is_empty() {
+        let next_file_contents = fm.get_next_file_contents();
+        let mut new_parsed = parse_asm(next_file_contents);
+
+        fm.extend_file_stack(&new_parsed);
+        new_parsed = new_parsed.into_iter().filter(|statement| !matches!(statement, Statement::IncludeStatement(_))).collect();
+
+        // Extend the AST with new file contents
+        parsed.extend(new_parsed);
+    }
+
+    process_asm(parsed)
 }
 
 pub fn compile_asm(input: String) -> String {
-    let mut parsed = parse_asm(input);
+    let parsed = parse_asm(input);
+
+    process_asm(parsed)
+}
+
+pub fn process_asm(mut parsed: Vec<Statement>) -> String {
 
     // Resolve all constants
     resolve_constants(&mut parsed);
 
-    let mut parsed = resolve_macros(parsed);
+    // TODO: remove to_vec
+    let mut parsed = resolve_macros(parsed.to_vec());
 
     // Resolve all static labels
     resolve_labels(&mut parsed);
@@ -28,6 +51,7 @@ pub fn compile_asm(input: String) -> String {
     // Before we pass to the code generator, all we should have is a vector of opcodes
     let instructions = temporary_to_instruction_vector(parsed);
     generate_code(instructions)
+
 }
 
 // Resolve constants
@@ -178,10 +202,6 @@ fn temporary_to_instruction_vector(parsed: Vec<Statement>) -> Vec<Instruction> {
     instructions
 }
 
-mod tests {
-    use crate::{
-        codegen::generate_code, compiler::compile_asm, instruction::Instruction, opcodes::Opcode,
-    };
 
     #[test]
     fn simple_test() {
@@ -357,5 +377,18 @@ mod tests {
         let bytecode = compile_asm(inputs);
         let expected_bytecode = "0000000000000000123400000000000012340000000000001234";
         assert_eq!(bytecode, expected_bytecode);
-    }
 }
+
+
+#[test]
+fn test_includes_io() {
+    // Test includes IO
+    let input = std::fs::read_to_string("./test_programs/includes.avm").unwrap();
+    let parsed = parse_asm(input);
+
+    // Each file contains just one macro, so we expect that they end up pointing at the same thing
+    let expected_length = 2;
+    assert_eq!(parsed.len(), expected_length);
+}
+
+// Next test: make labels work in the multi file setting

@@ -6,6 +6,7 @@ use crate::{opcodes::Opcode, utils::hex_to_bytes};
 
 #[derive(Debug, Clone)]
 pub enum Statement {
+    IncludeStatement(String),
     MacroStatement(String, Vec<Statement>),
     MacroInvocation(String),
     OpcodeStatement(
@@ -69,6 +70,7 @@ pub enum TypeTag {
     FF,
 }
 
+// TODO(md): the parser should not be concerned with the file manager, move this up a level
 pub(crate) fn parse_asm(input: String) -> Vec<Statement> {
     let parser = avm::StatementsParser::new();
     let parsed = parser.parse(&input);
@@ -88,3 +90,16 @@ fn test_parser() {
 
     parse_asm(input);
 }
+
+// #[test]
+// fn test_includes_io() {
+//     // Test includes IO
+//     let input = std::fs::read_to_string("./test_programs/includes.avm").unwrap();
+//     let parsed = parse_asm(input);
+
+//     // Each file contains just one macro, so we expect that they end up pointing at the same thing
+//     let expected_length = 2;
+//     assert_eq!(parsed.len(), expected_length);
+// }
+
+// Next test: make labels work in the multi file setting
